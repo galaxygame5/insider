@@ -655,6 +655,7 @@
       const payload = {
         type: 'GAME_START',
         role: role,
+        // マスターとインサイダーの両方にお題データを送信
         word: (role === 'マスター' || role === 'インサイダー') ? secretWord : null,
         questionTime: questionDuration,
         discussionTime: discussionDuration
@@ -666,8 +667,9 @@
   }
 
   function setupConfirmScreen(data) {
+    // 役職とお題の設定
     myRole = data.role;
-    secretWord = data.word;
+    secretWord = data.word ? data.word : ""; // 送信されてきたお題を保持
 
     document.getElementById("screen-room").style.display = "none";
     document.getElementById("screen-confirm").style.display = "block";
@@ -678,7 +680,8 @@
     document.getElementById("info-role").innerText = myRole;
 
     const wordBox = document.getElementById("info-word-box");
-    if (secretWord) {
+    // お題データが存在する場合（マスターまたはインサイダー）は表示
+    if (secretWord && secretWord !== "") {
       wordBox.style.display = "block";
       document.getElementById("info-word").innerText = secretWord;
     } else {
@@ -686,10 +689,11 @@
       document.getElementById("info-word").innerText = "-";
     }
 
+    // 画面上部常駐領域の表示設定
     document.getElementById("sticky-role").innerText = myRole;
-    document.getElementById("sticky-word").innerText = secretWord ? secretWord : "??? (非公開)";
+    document.getElementById("sticky-word").innerText = (secretWord && secretWord !== "") ? secretWord : "??? (非公開)";
     document.getElementById("sticky-role-v").innerText = myRole;
-    document.getElementById("sticky-word-v").innerText = secretWord ? secretWord : "??? (非公開)";
+    document.getElementById("sticky-word-v").innerText = (secretWord && secretWord !== "") ? secretWord : "??? (非公開)";
 
     let confirmRemaining = 20;
     document.getElementById("confirm-timer").innerText = confirmRemaining;
@@ -826,14 +830,9 @@
         if (cnt > maxCnt) maxCnt = cnt;
       });
 
-      // 最多票を獲得したプレイヤーのリスト
       const topVotedIds = Object.keys(counts).filter(id => counts[id] === maxCnt);
       const insider = players.find(p => p.role === 'インサイダー');
 
-      // 【修正箇所】
-      // 1. 最多獲得者の中に「1人だけ」インサイダーが含まれている（単独1位で最多票）
-      // 2. または最多獲得者の中にインサイダーが含まれており、同率1位で並んでいる（例：2:2）
-      // 今回は「インサイダーが最多票グループに含まれていれば庶民勝利」と判定します。
       const isSuccess = topVotedIds.includes(insider.id);
 
       const finalPlayersResult = players.map(p => {
