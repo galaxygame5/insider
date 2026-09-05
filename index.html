@@ -383,7 +383,7 @@
     <div class="card" style="text-align: center;">
       <div class="card-header" style="justify-content: center;">📜 あなたの役職と確認タイム</div>
       <div id="info-role" class="info-highlight" style="margin: 12px 0;">-</div>
-      <div id="info-word-box" style="display:none; margin-top: 15px;">
+      <div id="info-word-box" style="margin-top: 15px;">
         <div style="font-size: 1.1rem; color: var(--text-muted); font-weight: bold;">秘密のお題</div>
         <div id="info-word" class="word-highlight">-</div>
       </div>
@@ -655,7 +655,6 @@
       const payload = {
         type: 'GAME_START',
         role: role,
-        // マスターとインサイダーの両方にお題データを送信
         word: (role === 'マスター' || role === 'インサイダー') ? secretWord : null,
         questionTime: questionDuration,
         discussionTime: discussionDuration
@@ -667,9 +666,8 @@
   }
 
   function setupConfirmScreen(data) {
-    // 役職とお題の設定
     myRole = data.role;
-    secretWord = data.word ? data.word : ""; // 送信されてきたお題を保持
+    secretWord = data.word ? data.word : "";
 
     document.getElementById("screen-room").style.display = "none";
     document.getElementById("screen-confirm").style.display = "block";
@@ -679,21 +677,20 @@
 
     document.getElementById("info-role").innerText = myRole;
 
-    const wordBox = document.getElementById("info-word-box");
-    // お題データが存在する場合（マスターまたはインサイダー）は表示
-    if (secretWord && secretWord !== "") {
-      wordBox.style.display = "block";
-      document.getElementById("info-word").innerText = secretWord;
+    const wordEl = document.getElementById("info-word");
+    if (myRole === "マスター" || myRole === "インサイダー") {
+      wordEl.innerText = secretWord;
+      wordEl.style.color = "var(--danger-color)";
     } else {
-      wordBox.style.display = "none";
-      document.getElementById("info-word").innerText = "-";
+      wordEl.innerText = "??? (非公開)";
+      wordEl.style.color = "var(--text-muted)";
     }
 
-    // 画面上部常駐領域の表示設定
+    const stickyWordText = (myRole === "マスター" || myRole === "インサイダー") ? secretWord : "??? (非公開)";
     document.getElementById("sticky-role").innerText = myRole;
-    document.getElementById("sticky-word").innerText = (secretWord && secretWord !== "") ? secretWord : "??? (非公開)";
+    document.getElementById("sticky-word").innerText = stickyWordText;
     document.getElementById("sticky-role-v").innerText = myRole;
-    document.getElementById("sticky-word-v").innerText = (secretWord && secretWord !== "") ? secretWord : "??? (非公開)";
+    document.getElementById("sticky-word-v").innerText = stickyWordText;
 
     let confirmRemaining = 20;
     document.getElementById("confirm-timer").innerText = confirmRemaining;
