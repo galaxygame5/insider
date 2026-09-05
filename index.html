@@ -683,6 +683,7 @@
       document.getElementById("info-word").innerText = secretWord;
     } else {
       wordBox.style.display = "none";
+      document.getElementById("info-word").innerText = "-";
     }
 
     document.getElementById("sticky-role").innerText = myRole;
@@ -825,14 +826,15 @@
         if (cnt > maxCnt) maxCnt = cnt;
       });
 
+      // 最多票を獲得したプレイヤーのリスト
       const topVotedIds = Object.keys(counts).filter(id => counts[id] === maxCnt);
       const insider = players.find(p => p.role === 'インサイダー');
 
-      // ▼ 修正点: インサイダーが最多票を獲得し、かつ過半数の票を集めた場合のみ庶民・マスター陣営の勝利とする
-      const majorityThreshold = Math.floor(totalCount / 2) + 1;
-      const insiderVotesCount = counts[insider.id] || 0;
-      
-      const isSuccess = topVotedIds.includes(insider.id) && (insiderVotesCount >= majorityThreshold);
+      // 【修正箇所】
+      // 1. 最多獲得者の中に「1人だけ」インサイダーが含まれている（単独1位で最多票）
+      // 2. または最多獲得者の中にインサイダーが含まれており、同率1位で並んでいる（例：2:2）
+      // 今回は「インサイダーが最多票グループに含まれていれば庶民勝利」と判定します。
+      const isSuccess = topVotedIds.includes(insider.id);
 
       const finalPlayersResult = players.map(p => {
         const votedTargetId = votes[p.id];
@@ -949,6 +951,10 @@
   }
 
   function returnToRoom() {
+    myRole = "";
+    secretWord = "";
+    votes = {};
+
     document.getElementById("screen-result").style.display = "none";
     document.getElementById("screen-room").style.display = "block";
     log("待機ルームに戻りました。");
