@@ -437,6 +437,12 @@
     <div class="timer-display" id="question-timer">05:00</div>
     <div style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-bottom:12px;">❓ 質問フェイズ（マスターに「はい／いいえ」で質問してください）</div>
 
+    <!-- マスターとインサイダーだけに見える常時確認用パネル -->
+    <div id="persistent-word-card" class="card" style="text-align: center; background: #161616; border: 1px dashed var(--gold-dark); margin-bottom: 15px; display: none;">
+      <div style="font-size: 0.95rem; color: var(--gold-light); font-weight: bold; margin-bottom: 4px;">📜 あなたの役割 & お題（いつでも確認用）</div>
+      <div id="persistent-role-word" style="font-size: 1.15rem; color: var(--text-color);">役職: --- / お題: ---</div>
+    </div>
+
     <div class="card" style="text-align: center; background: #181818;">
       <div class="card-header" style="justify-content: center; color: var(--gold-main);">💡 お題正解ボタン</div>
       <p style="font-size: 0.95rem; color: var(--text-muted); margin-top: 0;">制限時間内にお題の言葉を当てたら、ここを押して「推理タイム」へ進んでください。</p>
@@ -517,11 +523,27 @@
 
 <script>
   const MASTER_WORD_LIST = [
-    "りんご", "スマートフォン", "新幹線", "消しゴム", "冷蔵庫", "ギター",
-    "ピザ", "サッカーボール", "富士山", "ペンギン", "メガネ", "掃除機",
-    "歯ブラシ", "ハンバーガー", "宇宙飛行士", "カメラ", "ノートパソコン",
-    "ドライヤー", "時計", "コーヒー", "チョコレート", "すし", "ライオン",
-    "飛行機", "自転車", "傘", "電子レンジ", "花火"
+    // 1〜20: 身の回りの物・日用品
+    "りんご", "消しゴム", "冷蔵庫", "歯ブラシ", "ハンガー", "ドライヤー", "時計", "コーヒー",
+    "チョコレート", "傘", "電子レンジ", "花火", "メガネ", "掃除機", "ノートパソコン", "カメラ",
+    "トイレットペーパー", "ハサミ", "枕", "マスク",
+    
+    // 21〜40: 食べ物・飲み物
+    "スマートフォン", "新幹線", "ピザ", "サッカーボール", "富士山", "ペンギン", "ハンバーガー",
+    "宇宙飛行士", "すし", "ライオン", "飛行機", "自転車", "ラーメン", "カレーライス", "おでん",
+    "納豆", "スイカ", "いちご", "ビール", "おにぎり",
+    
+    // 41〜60: 生き物・動物・植物
+    "ゾウ", "キリン", "パンダ", "イルカ", "クジラ", "カメ", "ウサギ", "ネコ", "イヌ", "ハムスター",
+    "ひまわり", "サクラ", "バラ", "サボテン", "カブトムシ", "クワガタ", "チョウ", "カエル", "タコ", "クラゲ",
+    
+    // 61〜80: 場所・建物・乗り物・自然
+    "病院", "学校", "コンビニ", "図書館", "遊園地", "映画館", "空港", "ホテル", "公園", "美術館",
+    "ヘリコプター", "潜水艦", "ロケット", "パトカー", "救急車", "海", "川", "砂漠", "火山", "洞窟",
+    
+    // 81〜100: 職業・概念・その他
+    "警察官", "消防士", "医者", "プログラマー", "忍者", "魔法使い", "王様", "アイドル", "ユーチューバー", "サンタクロース",
+    "幽霊", "ロボット", "タイムマシン", "鏡", "ダイヤモンド", "王冠", "宝箱", "星座", "虹", "夢"
   ];
 
   const PREFIX = "insider-game-v3-";
@@ -690,13 +712,13 @@
       else if (p.id === insiderId) role = "インサイダー";
       p.role = role;
 
-      // 【修正】マスターとインサイダーにはお題を表示し、市民（庶民）だけに「？？？」を表示する
       const wordToShow = (role === "庶民") ? "？？？（秘密）" : currentWord;
 
       const payload = {
         type: 'GAME_START',
         role: role,
         word: wordToShow,
+        rawWord: currentWord,
         confirmTime: confirmDuration,
         gameTime: gameDuration
       };
@@ -836,7 +858,7 @@
 
   function setupConfirmScreen(data) {
     myRole = data.role;
-    currentWord = data.word;
+    currentWord = data.rawWord || data.word;
 
     document.getElementById("screen-room").style.display = "none";
     document.getElementById("screen-confirm").style.display = "block";
@@ -855,6 +877,16 @@
     } else {
       wordEl.innerText = currentWord;
       wordEl.style.color = "var(--gold-main)";
+    }
+
+    const persistentCard = document.getElementById("persistent-word-card");
+    const persistentEl = document.getElementById("persistent-role-word");
+
+    if (myRole === "庶民") {
+      persistentCard.style.display = "none";
+    } else {
+      persistentCard.style.display = "block";
+      persistentEl.innerHTML = `役職: <span style="color:var(--gold-light)">${myRole}</span> / お題: <span style="color:var(--gold-main); font-weight:bold;">${currentWord}</span>`;
     }
   }
 
