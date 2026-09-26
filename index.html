@@ -712,12 +712,9 @@
       else if (p.id === insiderId) role = "インサイダー";
       p.role = role;
 
-      const wordToShow = (role === "庶民") ? "？？？（秘密）" : currentWord;
-
       const payload = {
         type: 'GAME_START',
         role: role,
-        word: wordToShow,
         rawWord: currentWord,
         confirmTime: confirmDuration,
         gameTime: gameDuration
@@ -858,7 +855,7 @@
 
   function setupConfirmScreen(data) {
     myRole = data.role;
-    currentWord = data.rawWord || data.word;
+    currentWord = data.rawWord;
 
     document.getElementById("screen-room").style.display = "none";
     document.getElementById("screen-confirm").style.display = "block";
@@ -879,6 +876,7 @@
       wordEl.style.color = "var(--gold-main)";
     }
 
+    // 質問フェイズの常時表示カード（マスターまたはインサイダーなら全員表示、庶民なら絶対非表示）
     const persistentCard = document.getElementById("persistent-word-card");
     const persistentEl = document.getElementById("persistent-role-word");
 
