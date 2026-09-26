@@ -384,7 +384,7 @@
 
         <h4>ゲームの流れ</h4>
         <ol>
-          <li><strong>質問タイム</strong>: マスターに「はい／いいえ」で質問して、お題を当てます。</li>
+          <li><strong>質問タイム</strong>: マスターに「はい／いいえ」で質問して、お題を当てます。（市民だけお題が非表示です）</li>
           <li><strong>推理・議論タイム</strong>: お題が正解したら、インサイダーを探すための議論タイム（2分〜）が始まります。</li>
           <li><strong>投票タイム</strong>: 誰がインサイダーだったか一斉に投票します。</li>
         </ol>
@@ -690,10 +690,13 @@
       else if (p.id === insiderId) role = "インサイダー";
       p.role = role;
 
+      // 【修正】マスターとインサイダーにはお題を表示し、市民（庶民）だけに「？？？」を表示する
+      const wordToShow = (role === "庶民") ? "？？？（秘密）" : currentWord;
+
       const payload = {
         type: 'GAME_START',
         role: role,
-        word: (role === "庶民") ? "？？？" : currentWord,
+        word: wordToShow,
         confirmTime: confirmDuration,
         gameTime: gameDuration
       };
